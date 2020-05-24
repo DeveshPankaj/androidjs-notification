@@ -7,45 +7,14 @@ function isMobile() {
 
 
 // Notification Class
+
 class Notification {
 	constructor(title, msg, syncWithJs = false) {
 		(window).notificationCounter = (window).notificationCounter || 1;
 		this.data = { title, msg };
 		this.id = this.getRendomNo();
 		this.syncWithJs = syncWithJs;
-		this.isVisible = false;
-
-		// for mobile
-		if(isMobile()) {
-			if(this.syncWithJs) {
-				(window).android.initNotification(this.data.title, this.data.msg);
-				(window).android.showNotification(this.id);
-				this.isVisible = true;
-			}
-		}
-
-		// for browser
-		else {
-			if (!(window).Notification) {
-		        console.error('Browser does not support notifications.');
-		    } else if(this.syncWithJs) {
-		    	let _this = this;
-		    	window.Notification.requestPermission().then(function (p) {
-	                if (p === 'granted') {
-	                    // show notification here
-	                    var notify = new window.Notification(_this.data.title, {
-	                        body: _this.data.msg,
-	                        icon: '/favicon.ico',
-	                    });
-	                } else {
-	                    console.log('User blocked notifications.');
-	                }
-	            }).catch(function (err) {
-	                console.error(err);
-	            });
-		    }
-		}
-		
+		if(this.syncWithJs) this.show();
 	}
 
 	// get next notification unique id
@@ -66,89 +35,67 @@ class Notification {
 	// set current notifacation title
 	set title (value) {
 		this.data.title = value;
-		if(isMobile() && this.syncWithJs) {
-			(window).android.initNotification(this.data.title, this.data.msg);
-			this.show();
-		} else if(this.syncWithJs) {
-			let _this = this;
-	    	window.Notification.requestPermission().then(function (p) {
-                if (p === 'granted') {
-                    // show notification here
-                    var notify = new window.Notification(_this.data.title, {
-                        body: _this.data.msg,
-                        icon: '/favicon.ico',
-                    });
-                } else {
-                    console.log('User blocked notifications.');
-                }
-            }).catch(function (err) {
-                console.error(err);
-            });
-		}
+		if(this.syncWithJs) this.show();
 	}
 
 	// set current notifacation msg
 	set msg (value) {
 		this.data.msg = value;
-		if(isMobile() && this.syncWithJs) {
-			(window).android.initNotification(this.data.title, this.data.msg);
-			this.show();
-		} else if(this.syncWithJs) {
-			let _this = this;
-	    	window.Notification.requestPermission().then(function (p) {
-                if (p === 'granted') {
-                    // show notification here
-                    var notify = new window.Notification(_this.data.title, {
-                        body: _this.data.msg,
-                        icon: '/favicon.ico',
-                    });
-                } else {
-                    console.log('User blocked notifications.');
-                }
-            }).catch(function (err) {
-                console.error(err);
-            });
-		}
+		if(this.syncWithJs) this.show();
 	}
 
-	// show notifiaction on screen
 	show() {
-		if(isMobile()) {
-			if(!this.isVisible) {
-				this.isVisible = true;
-				(window).android.initNotification(this.data.title, this.data.msg);
-				(window).android.showNotification(this.id);
-			} else {
-				(window).android.showNotification(this.id);
-			}
-		} else {
-			let _this = this;
-	    	window.Notification.requestPermission().then(function (p) {
-                if (p === 'granted') {
-                    // show notification here
-                    var notify = new window.Notification(_this.data.title, {
-                        body: _this.data.msg,
-                        icon: '/favicon.ico',
-                    });
-                } else {
-                    console.log('User blocked notifications.');
-                }
-            }).catch(function (err) {
-                console.error(err);
-            });
-		}
+		if(isMobile()) this.showInMobile();
+		else this.showInBrowser();
+	}
+
+	showInMobile() {
+		(window).android.initNotification(this.title, this.msg);
+		(window).android.showNotification(this.id);
+	}
+
+	update({title, msg}) {
+		this.data.title = title || this.data.title;
+		this.data.msg = msg || this.data.msg;
+		this.show();
+	}
+
+	showInBrowser() {
+		let _this = this;
+    	window.Notification.requestPermission().then(function (p) {
+            if (p === 'granted') {
+                // show notification here
+                var notify = new window.Notification(_this.title, {
+                    body: _this.msg,
+                    icon: '/favicon.ico',
+                });
+            } else {
+                console.log('User blocked notifications.');
+            }
+        }).catch(function (err) {
+            console.error(err);
+        });
 	}
 }
 
 
 
+
+
 /// Example - 1: auto sync
 // let noti = new Notification("Noti 1", "Hello", true);
+// noti.title = 'new title';
 // noti.msg = `Hello World`;
 
 
-
-/// Example - 2: 
+// Example - 2: Update // works with or without auto sync
 // let noti = new Notification("Noti 1", "Hello", false);
+// noti.update({title: "new Title", msg: "new Msg"});
+
+
+/// Example - 3: 
+// let noti = new Notification("Noti 1", "Hello", false);
+// noti.title = 'new title';
 // noti.msg = `Hello World`;
 // noti.show()
+
