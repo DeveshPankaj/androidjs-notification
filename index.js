@@ -4,7 +4,7 @@ function isMobile() {
   return check;
 }
 
-
+exports = exports || {__esModule: {value: true}}
 
 // Notification Class
 
@@ -80,6 +80,7 @@ class Notification {
 
 
 
+exports.default = Notification
 
 
 /// Example - 1: auto sync
